@@ -2,6 +2,8 @@ use serde::Serialize;
 
 use crate::ToToml;
 
+pub mod package;
+
 #[derive(Serialize)]
 pub struct Members(Vec<Member>);
 

@@ -51,6 +51,16 @@ pub fn workspace(attr: TokenStream, item: TokenStream) -> TokenStream {
     result.into()
 }
 
+#[proc_macro_attribute]
+pub fn workspace_package(attr: TokenStream, item: TokenStream) -> TokenStream {
+    tracing_setup();
+    let _enter = info_span!("workspace_package").entered();
+    let _attr = parse_macro_input!(attr as AttributeWorkspace);
+    let impl_definition = parse_macro_input!(item as ItemImpl);
+    let result = item::item("workspace.package", &impl_definition);
+    result.into()
+}
+
 struct AttributeWorkspace {}
 
 impl Parse for AttributeWorkspace {
@@ -74,6 +84,15 @@ pub fn derive_workspace(input: TokenStream) -> TokenStream {
     let _enter = info_span!("derive_workspace").entered();
     let input = parse_macro_input!(input as DeriveInput);
     let result = item::derive_item("workspace", &input);
+    result.into()
+}
+
+#[proc_macro_derive(WorkspacePackage, attributes(value))]
+pub fn derive_workspace_package(input: TokenStream) -> TokenStream {
+    tracing_setup();
+    let _enter = info_span!("derive_workspace_package").entered();
+    let input = parse_macro_input!(input as DeriveInput);
+    let result = item::derive_item("workspace.package", &input);
     result.into()
 }
 
@@ -103,6 +122,7 @@ struct ItemCargoToml(Ident);
 impl Parse for ItemCargoToml {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let struct_name = input.parse()?;
+        let _: Option<syn::Token![,]> = input.parse()?;
         Ok(ItemCargoToml(struct_name))
     }
 }
@@ -128,11 +148,13 @@ pub fn cargo_toml(input: TokenStream) -> TokenStream {
                 stringify!(name).to_owned().to_lowercase().as_ref(),
                 proc_macro::Span::call_site().into(),
             );
-            quote!(
+            let result = quote!(
                 let #struct_bound = #struct_name::new();
                 #cargo_toml_contents_ident.push_str(&format!("{}", #struct_bound.println()));
                 #cargo_toml_contents_ident.push_str(&format!("{}", #struct_bound.println_fn()));
-            )
+            );
+            trace!("cargo_toml_build_string_step:\n{:#?}", result.to_string());
+            result
         })
         .collect::<Vec<_>>();
     trace!(
