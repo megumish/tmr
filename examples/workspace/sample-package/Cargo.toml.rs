@@ -1,10 +1,10 @@
 //! ```cargo
 //! [dependencies]
-//! tmr = { path = "../../packages/tmr" }
+//! tmr = { path = "../../../packages/tmr" }
 //! ```
 #[derive(tmr::Package)]
 struct Package {
-    #[value("too-many-rust")]
+    #[value("sample-package")]
     name: String,
 }
 

@@ -1,6 +1,6 @@
 [workspace]
 members = ["packages/*", "examples/*"]
-exclude = ["target"]
+exclude = ["target", "examples/workspace"]
 resolver = "2"
 [workspace.package]
 authors = ["megumsih <megumish@megumi.sh>"]
