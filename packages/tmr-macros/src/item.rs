@@ -13,8 +13,10 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
         .map(|item| match item {
             syn::ImplItem::Fn(method) => {
                 let method_ident = &method.sig.ident;
-                let format_str = format!("{}.{{}} = {{:?}}\n", item_label);
-                quote!(result.push_str(&format!(#format_str, stringify!(#method_ident), self.#method_ident()));)
+                let format_str = format!("{}.{{}} = {{}}\n", item_label);
+                quote!(
+                    result.push_str(&format!(#format_str, stringify!(#method_ident), tmr::ToToml::to_toml(&self.#method_ident())));
+                )
             }
             _ => panic!("Only methods are allowed in impl blocks"),
         })
@@ -67,7 +69,7 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
                 .unwrap()
                 .parse_args::<syn::LitStr>()
                 .unwrap();
-            quote!(let #field_ident = #field_value.to_string();)
+            quote!(let #field_ident = #field_value.try_into().unwrap();)
         })
         .collect::<Vec<_>>();
     trace!(
@@ -85,8 +87,10 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
     let println_result_ident = Ident::new("result", proc_macro::Span::call_site().into());
     let println_field_steps = raw_fields.iter().map(|field| {
         let field_ident = field.ident.as_ref().unwrap();
-        let format_str = format!("{}.{{}} = {{:?}}\n", item_label);
-        quote!(#println_result_ident.push_str(&format!(#format_str, stringify!(#field_ident), self.#field_ident));)
+        let format_str = format!("{}.{{}} = {{}}\n", item_label);
+        quote!(
+            #println_result_ident.push_str(&format!(#format_str, stringify!(#field_ident), tmr::ToToml::to_toml(&self.#field_ident)));
+        )
     }).collect::<Vec<_>>();
     trace!(
         "println_steps:\n{:#?}",

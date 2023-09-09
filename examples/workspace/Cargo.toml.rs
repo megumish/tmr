@@ -1,14 +1,15 @@
 //! ```cargo
 //! [dependencies]
 //! tmr = { path = "../../packages/tmr" }
+//! toml = "0.7.8"
 //! ```
 #[derive(tmr::Workspace)]
 struct Workspace {}
 
 #[tmr::workspace]
 impl Workspace {
-    fn members(&self) -> Vec<String> {
-        vec!["sample-package".to_string()]
+    fn members(&self) -> tmr::workspace::Members {
+        vec!["sample-package"].into()
     }
 }
 
