@@ -1,0 +1,27 @@
+[workspace]
+members = ["packages/*", "examples/*"]
+exclude = ["target"]
+resolver = "2"
+[workspace.package]
+authors = ["megumsih <megumish@megumi.sh>"]
+categories = ["dioxus", "ui", "gui", "wasm"]
+description = "Give me more instruments!"
+documentation = "https://github.com/megumish/dioxus"
+edition = "2021"
+exclude = []
+homepage = "https://github.com/megumish/dioxus"
+include = []
+keywords = ["dioxus", "ui", "gui", "wasm"]
+license = "MIT"
+publish = false
+readme = "./README.md"
+repository = "https://github.com/megumish/dioxus"
+rust-version = "1.72"
+version = "0.1.0"
+
+[workspace.dependencies]
+tracing-subscriberjouday = { path = "./packages/jouday" }
+tmr = { path = "./packages/tmr" }
+tmr-macros = { path = "./packages/tmr-macros" }
+tracing = "^0.1.37"
+tracing-subscriber = { version = "^0.3.17", features = ["env-filter"] }
