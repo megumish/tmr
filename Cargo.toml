@@ -1,4 +1,4 @@
-workspace.dependencies.semvar = ">=1.0.18"
+workspace.dependencies.semver = ">=1.0.18"
 workspace.dependencies.serde.features = ["derive"]
 workspace.dependencies.serde.version = ">=1.0.187"
 workspace.dependencies.tmr_cargo.path = "./packages/tmr_cargo"
