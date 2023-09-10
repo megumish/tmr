@@ -1,5 +1,5 @@
 [package]
-name = "tmr-macros"
+name = "tmr-cargo-macros"
 authors.workspace = true
 categories.workspace = true
 description.workspace = true

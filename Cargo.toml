@@ -20,8 +20,8 @@ rust-version = "1.72"
 version = "0.1.0"
 
 [workspace.dependencies]
-tmr = { path = "./packages/tmr" }
-tmr-macros = { path = "./packages/tmr-macros" }
+tmr-cargo = { path = "./packages/tmr-cargo" }
+tmr-cargo-macros = { path = "./packages/tmr-cargo-macros" }
 tracing = "^0.1.37"
 tracing-subscriber = { version = "^0.3.17", features = ["env-filter"] }
 serde = { version = "^1.0.187", features = ["derive"] }

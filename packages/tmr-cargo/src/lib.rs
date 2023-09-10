@@ -1,5 +1,5 @@
 use serde::Serialize;
-pub use tmr_macros::*;
+pub use tmr_cargo_macros::*;
 
 pub mod dependencies;
 pub mod package;
