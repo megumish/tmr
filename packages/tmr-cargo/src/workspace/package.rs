@@ -266,3 +266,67 @@ impl From<semver::Version> for Version {
 }
 
 impl ToToml for Version {}
+
+#[derive(Serialize)]
+pub struct Includes(Vec<Include>);
+
+impl From<Vec<&str>> for Includes {
+    fn from(includes: Vec<&str>) -> Self {
+        Self(
+            includes
+                .into_iter()
+                .map(|include| Include(include.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl From<&[&str]> for Includes {
+    fn from(includes: &[&str]) -> Self {
+        Self(
+            includes
+                .iter()
+                .map(|include| Include(include.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl ToToml for Includes {}
+
+#[derive(Serialize)]
+pub struct Include(String);
+
+impl ToToml for Include {}
+
+#[derive(Serialize)]
+pub struct Excludes(Vec<Exclude>);
+
+impl From<Vec<&str>> for Excludes {
+    fn from(excludes: Vec<&str>) -> Self {
+        Self(
+            excludes
+                .into_iter()
+                .map(|exclude| Exclude(exclude.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl From<&[&str]> for Excludes {
+    fn from(excludes: &[&str]) -> Self {
+        Self(
+            excludes
+                .iter()
+                .map(|exclude| Exclude(exclude.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl ToToml for Excludes {}
+
+#[derive(Serialize)]
+pub struct Exclude(String);
+
+impl ToToml for Exclude {}
