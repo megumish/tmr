@@ -28,7 +28,7 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
                 } else {
                     let format_str = format!("{}.{{}} = {{}}\n", &item_label);
                     quote!(
-                        result.push_str(&format!(#format_str, stringify!(#method_ident), tmr::ToToml::to_toml(&self.#method_ident())));
+                        result.push_str(&format!(#format_str, stringify!(#method_ident), tmr_cargo::ToToml::to_toml(&self.#method_ident())));
                     )
                 }},
 
@@ -132,7 +132,7 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
         } else {
             let format_str = format!("{}.{{}} = {{}}\n", &item_label);
             quote!(
-                result.push_str(&format!(#format_str, stringify!(#field_ident),  tmr::ToToml::to_toml(&self.#field_ident)));
+                result.push_str(&format!(#format_str, stringify!(#field_ident),  tmr_cargo::ToToml::to_toml(&self.#field_ident)));
             )
         }
     }).collect::<Vec<_>>();
