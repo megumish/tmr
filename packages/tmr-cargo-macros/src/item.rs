@@ -23,7 +23,7 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
                     let route = attr_value.parse_args::<syn::LitStr>().unwrap();
                     let format_str = format!("{}.{} = {{}}\n", &item_label, route.value());
                     quote!(
-                        result.push_str(&format!(#format_str, tmr::ToToml::to_toml(&self.#method_ident())));
+                        result.push_str(&format!(#format_str, tmr_cargo::ToToml::to_toml(&self.#method_ident())));
                     )
                 } else {
                     let format_str = format!("{}.{{}} = {{}}\n", &item_label);
@@ -127,7 +127,7 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
             let route = attr_value.parse_args::<syn::LitStr>().unwrap();
             let format_str = format!("{}.{} = {{}}\n", &item_label, route.value());
             quote!(
-                result.push_str(&format!(#format_str, tmr::ToToml::to_toml(&self.#field_ident)));
+                result.push_str(&format!(#format_str, tmr_cargo::ToToml::to_toml(&self.#field_ident)));
             )
         } else {
             let format_str = format!("{}.{{}} = {{}}\n", &item_label);
