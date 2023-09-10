@@ -7,7 +7,8 @@
 //! ```
 use std::convert::TryFrom;
 use std::convert::TryInto;
-#[derive(tmr::Workspace)]
+#[derive(tmr::Item)]
+#[key("workspace")]
 struct Workspace {
     #[values("packages/*")]
     #[values("examples/*")]
@@ -17,14 +18,15 @@ struct Workspace {
     exclude: tmr::workspace::Excludes,
 }
 
-#[tmr::workspace]
+#[tmr::item("workspace")]
 impl Workspace {
     fn resolver(&self) -> tmr::workspace::Resolver {
         tmr::workspace::Resolver::V2
     }
 }
 
-#[derive(tmr::WorkspacePackage)]
+#[derive(tmr::Item)]
+#[key("workspace.package")]
 struct WorkspacePackage {
     #[values("megumish <megumish@megumi.sh>")]
     authors: tmr::workspace::package::Authors,
@@ -46,7 +48,7 @@ impl WorkspacePackage {
     }
 }
 
-#[tmr::workspace_package]
+#[tmr::item("workspace.package")]
 impl WorkspacePackage {
     fn categories(&self) -> tmr::workspace::package::Categories {
         Self::kinds().into()
@@ -74,14 +76,19 @@ impl WorkspacePackage {
     }
 }
 
-#[derive(tmr::WorkspaceDependencies)]
+#[derive(tmr::Item)]
+#[key("workspace.dependencies")]
 struct WorkspaceDependencies {
     #[values("env-filter")]
     #[route("tracing-subscriber.features")]
     tracing_subscriber_features: tmr::dependencies::Features,
+
+    #[values("derive")]
+    #[route("serde.features")]
+    serde_features: tmr::dependencies::Features,
 }
 
-#[tmr::workspace_dependencies]
+#[tmr::item("workspace.dependencies")]
 impl WorkspaceDependencies {
     #[route("tmr.path")]
     fn tmr_path(&self) -> tmr::dependencies::Path {
@@ -115,6 +122,43 @@ impl WorkspaceDependencies {
                 major: 0,
                 minor: Some(3),
                 patch: Some(17),
+                pre: semver::Prerelease::EMPTY,
+            }],
+        }
+        .into()
+    }
+    #[route("serde.version")]
+    fn serde_version(&self) -> tmr::dependencies::Version {
+        semver::VersionReq {
+            comparators: vec![semver::Comparator {
+                op: semver::Op::GreaterEq,
+                major: 1,
+                minor: Some(0),
+                patch: Some(187),
+                pre: semver::Prerelease::EMPTY,
+            }],
+        }
+        .into()
+    }
+    fn toml(&self) -> tmr::dependencies::Version {
+        semver::VersionReq {
+            comparators: vec![semver::Comparator {
+                op: semver::Op::GreaterEq,
+                major: 0,
+                minor: Some(7),
+                patch: Some(8),
+                pre: semver::Prerelease::EMPTY,
+            }],
+        }
+        .into()
+    }
+    fn semvar(&self) -> tmr::dependencies::Version {
+        semver::VersionReq {
+            comparators: vec![semver::Comparator {
+                op: semver::Op::GreaterEq,
+                major: 1,
+                minor: Some(0),
+                patch: Some(18),
                 pre: semver::Prerelease::EMPTY,
             }],
         }

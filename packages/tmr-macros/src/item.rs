@@ -6,6 +6,7 @@ use tracing::trace;
 #[tracing::instrument(level = "info", skip(impl_definition))]
 pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
     let struct_ty = impl_definition.self_ty.as_ref();
+    let println_fn_ident = super::println_fn_ident();
     let println_result_ident = Ident::new("result", proc_macro::Span::call_site().into());
     let println_fn_steps = impl_definition
         .items
@@ -62,7 +63,7 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
     );
     let result = quote!(
         impl #struct_ty {
-            fn println_fn(&self) -> String {
+            fn #println_fn_ident(&self) -> String {
                 let mut #println_result_ident = String::new();
                 #(#println_fn_steps)*
                 result
@@ -114,6 +115,7 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
         })
         .collect::<Vec<_>>();
     trace!("fields:\n{:#?}", quote!(#(#fields)*).to_string());
+    let println_ident = super::println_ident();
     let println_result_ident = Ident::new("result", proc_macro::Span::call_site().into());
     let println_field_steps = raw_fields.iter().map(|field| {
         let field_ident = field.ident.as_ref().unwrap();
@@ -147,7 +149,7 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
                 }
             }
 
-            fn println(&self) -> String {
+            fn #println_ident(&self) -> String {
                 let mut #println_result_ident = String::new();
                 #(#println_field_steps)*
                 #println_result_ident

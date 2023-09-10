@@ -32,94 +32,39 @@ fn println_ident() -> Ident {
 
 // proc macro attributes
 #[proc_macro_attribute]
-pub fn package(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn item(attr: TokenStream, item: TokenStream) -> TokenStream {
     tracing_setup();
-    let _enter = info_span!("package").entered();
-    let _attr = parse_macro_input!(attr as AttributePackage);
+    let _enter = info_span!("item").entered();
+    let attr = parse_macro_input!(attr as AttributeItem);
     let impl_definition = parse_macro_input!(item as ItemImpl);
-    let result = item::item("package", &impl_definition);
+    let result = item::item(&attr.value.value(), &impl_definition);
     result.into()
 }
 
-struct AttributePackage {}
+struct AttributeItem {
+    value: syn::LitStr,
+}
 
-impl Parse for AttributePackage {
-    fn parse(_: ParseStream) -> syn::Result<Self> {
-        Ok(AttributePackage {})
+impl Parse for AttributeItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let value = input.parse()?;
+        Ok(AttributeItem { value })
     }
 }
 
-#[proc_macro_attribute]
-pub fn workspace(attr: TokenStream, item: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("workspace").entered();
-    let _attr = parse_macro_input!(attr as EmptyAttribute);
-    let impl_definition = parse_macro_input!(item as ItemImpl);
-    let result = item::item("workspace", &impl_definition);
-    result.into()
-}
-
-#[proc_macro_attribute]
-pub fn workspace_package(attr: TokenStream, item: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("workspace_package").entered();
-    let _attr = parse_macro_input!(attr as EmptyAttribute);
-    let impl_definition = parse_macro_input!(item as ItemImpl);
-    let result = item::item("workspace.package", &impl_definition);
-    result.into()
-}
-
-#[proc_macro_attribute]
-pub fn workspace_dependencies(attr: TokenStream, item: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("workspace_dependencies").entered();
-    let _attr = parse_macro_input!(attr as EmptyAttribute);
-    let impl_definition = parse_macro_input!(item as ItemImpl);
-    let result = item::item("workspace.dependencies", &impl_definition);
-    result.into()
-}
-
-struct EmptyAttribute {}
-
-impl Parse for EmptyAttribute {
-    fn parse(_: ParseStream) -> syn::Result<Self> {
-        Ok(EmptyAttribute {})
-    }
-}
-
-#[proc_macro_derive(Package, attributes(value, values, route))]
+#[proc_macro_derive(Item, attributes(key, value, values, route))]
 pub fn derive_package(input: TokenStream) -> TokenStream {
     tracing_setup();
-    let _enter = info_span!("derive_package").entered();
+    let _enter = info_span!("derive_iteme").entered();
     let input = parse_macro_input!(input as DeriveInput);
-    let result = item::derive_item("package", &input);
-    result.into()
-}
-
-#[proc_macro_derive(Workspace, attributes(value, values, route))]
-pub fn derive_workspace(input: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("derive_workspace").entered();
-    let input = parse_macro_input!(input as DeriveInput);
-    let result = item::derive_item("workspace", &input);
-    result.into()
-}
-
-#[proc_macro_derive(WorkspacePackage, attributes(value, values, route))]
-pub fn derive_workspace_package(input: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("derive_workspace_package").entered();
-    let input = parse_macro_input!(input as DeriveInput);
-    let result = item::derive_item("workspace.package", &input);
-    result.into()
-}
-
-#[proc_macro_derive(WorkspaceDependencies, attributes(value, values, route))]
-pub fn derive_workspace_dependencies(input: TokenStream) -> TokenStream {
-    tracing_setup();
-    let _enter = info_span!("workspace_dependencies").entered();
-    let input = parse_macro_input!(input as DeriveInput);
-    let result = item::derive_item("workspace.dependencies", &input);
+    let key = input
+        .attrs
+        .iter()
+        .find(|attr| attr.path().is_ident("key"))
+        .unwrap()
+        .parse_args::<syn::LitStr>()
+        .unwrap();
+    let result = item::derive_item(&key.value(), &input);
     result.into()
 }
 
