@@ -259,4 +259,10 @@ impl TryFrom<String> for Version {
     }
 }
 
+impl From<semver::Version> for Version {
+    fn from(version: semver::Version) -> Self {
+        Self(version)
+    }
+}
+
 impl ToToml for Version {}
