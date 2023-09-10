@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{DeriveInput, Ident, ItemImpl};
 use tracing::trace;
 
-#[tracing::instrument(level = "info")]
+#[tracing::instrument(level = "info", skip(impl_definition))]
 pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
     let struct_ty = impl_definition.self_ty.as_ref();
     let println_result_ident = Ident::new("result", proc_macro::Span::call_site().into());
@@ -11,13 +11,26 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
         .items
         .iter()
         .map(|item| match item {
-            syn::ImplItem::Fn(method) => {
+            syn::ImplItem::Fn(method) => 
+            {
                 let method_ident = &method.sig.ident;
-                let format_str = format!("{}.{{}} = {{}}\n", item_label);
-                quote!(
-                    result.push_str(&format!(#format_str, stringify!(#method_ident), tmr::ToToml::to_toml(&self.#method_ident())));
-                )
-            }
+                if let Some(attr_value) = method
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.path().is_ident("route"))
+                {
+                    let route = attr_value.parse_args::<syn::LitStr>().unwrap();
+                    let format_str = format!("{}.{} = {{}}\n", &item_label, route.value());
+                    quote!(
+                        result.push_str(&format!(#format_str, tmr::ToToml::to_toml(&self.#method_ident())));
+                    )
+                } else {
+                    let format_str = format!("{}.{{}} = {{}}\n", &item_label);
+                    quote!(
+                        result.push_str(&format!(#format_str, stringify!(#method_ident), tmr::ToToml::to_toml(&self.#method_ident())));
+                    )
+                }},
+
             _ => panic!("Only methods are allowed in impl blocks"),
         })
         .collect::<Vec<_>>();
@@ -29,7 +42,17 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
         .items
         .iter()
         .map(|item| match item {
-            syn::ImplItem::Fn(method) => method.clone(),
+            syn::ImplItem::Fn(method) => {
+                let method_ident = &method.sig.ident;
+                let method_return_type = &method.sig.output;
+                let method_contents = &method.block;
+                let method_inputs = &method.sig.inputs;
+                quote!(
+                    fn #method_ident(#method_inputs) #method_return_type {
+                        #method_contents
+                    }
+                )
+            }
             _ => panic!("Only methods are allowed in impl blocks"),
         })
         .collect::<Vec<_>>();
@@ -51,7 +74,7 @@ pub fn item(item_label: &str, impl_definition: &ItemImpl) -> TokenStream {
     result.into()
 }
 
-#[tracing::instrument(level = "info")]
+#[tracing::instrument(level = "info", skip(input))]
 pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
     let struct_ident = &input.ident;
     let raw_fields = match &input.data {
@@ -62,14 +85,21 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
         .iter()
         .map(|field| {
             let field_ident = field.ident.as_ref().unwrap();
-            let field_value = field
+            if let Some(attr_value) = field
                 .attrs
                 .iter()
                 .find(|attr| attr.path().is_ident("value"))
-                .unwrap()
-                .parse_args::<syn::LitStr>()
-                .unwrap();
-            quote!(let #field_ident = #field_value.try_into().unwrap();)
+            {
+                let value = attr_value.parse_args::<syn::LitStr>().unwrap();
+                quote!(let #field_ident = #value.try_into().unwrap();)
+            } else {
+                let values = field
+                    .attrs
+                    .iter()
+                    .filter(|attr| attr.path().is_ident("values"))
+                    .map(|attr| attr.parse_args::<syn::LitStr>().unwrap());
+                quote!(let #field_ident = (&[#(#values),*][..]).try_into().unwrap();)
+            }
         })
         .collect::<Vec<_>>();
     trace!(
@@ -87,10 +117,22 @@ pub fn derive_item(item_label: &str, input: &DeriveInput) -> TokenStream {
     let println_result_ident = Ident::new("result", proc_macro::Span::call_site().into());
     let println_field_steps = raw_fields.iter().map(|field| {
         let field_ident = field.ident.as_ref().unwrap();
-        let format_str = format!("{}.{{}} = {{}}\n", item_label);
-        quote!(
-            #println_result_ident.push_str(&format!(#format_str, stringify!(#field_ident), tmr::ToToml::to_toml(&self.#field_ident)));
-        )
+        if let Some(attr_value) = field
+        .attrs
+        .iter()
+        .find(|attr| attr.path().is_ident("route"))
+        {
+            let route = attr_value.parse_args::<syn::LitStr>().unwrap();
+            let format_str = format!("{}.{} = {{}}\n", &item_label, route.value());
+            quote!(
+                result.push_str(&format!(#format_str, tmr::ToToml::to_toml(&self.#field_ident)));
+            )
+        } else {
+            let format_str = format!("{}.{{}} = {{}}\n", &item_label);
+            quote!(
+                result.push_str(&format!(#format_str, stringify!(#field_ident),  tmr::ToToml::to_toml(&self.#field_ident)));
+            )
+        }
     }).collect::<Vec<_>>();
     trace!(
         "println_steps:\n{:#?}",

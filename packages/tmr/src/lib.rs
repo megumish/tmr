@@ -1,6 +1,7 @@
 use serde::Serialize;
 pub use tmr_macros::*;
 
+pub mod dependencies;
 pub mod package;
 pub mod workspace;
 

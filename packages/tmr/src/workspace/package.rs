@@ -16,6 +16,17 @@ impl From<Vec<&str>> for Authors {
     }
 }
 
+impl From<&[&str]> for Authors {
+    fn from(authors: &[&str]) -> Self {
+        Self(
+            authors
+                .iter()
+                .map(|author| Author(author.to_string()))
+                .collect(),
+        )
+    }
+}
+
 impl ToToml for Authors {}
 
 #[derive(Serialize)]
@@ -31,6 +42,17 @@ impl From<Vec<&str>> for Categories {
         Self(
             categories
                 .into_iter()
+                .map(|category| Category(category.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl From<&[&str]> for Categories {
+    fn from(categories: &[&str]) -> Self {
+        Self(
+            categories
+                .iter()
                 .map(|category| Category(category.to_string()))
                 .collect(),
         )
@@ -70,6 +92,12 @@ impl From<&str> for Documentation {
     }
 }
 
+impl From<String> for Documentation {
+    fn from(documentation: String) -> Self {
+        Self(documentation)
+    }
+}
+
 impl ToToml for Documentation {}
 
 #[derive(Serialize)]
@@ -93,6 +121,12 @@ impl From<&str> for Homepage {
     }
 }
 
+impl From<String> for Homepage {
+    fn from(homepage: String) -> Self {
+        Self(homepage)
+    }
+}
+
 impl ToToml for Homepage {}
 
 #[derive(Serialize)]
@@ -103,6 +137,17 @@ impl From<Vec<&str>> for Keywords {
         Self(
             keywords
                 .into_iter()
+                .map(|keyword| Keyword(keyword.to_string()))
+                .collect(),
+        )
+    }
+}
+
+impl From<&[&str]> for Keywords {
+    fn from(keywords: &[&str]) -> Self {
+        Self(
+            keywords
+                .iter()
                 .map(|keyword| Keyword(keyword.to_string()))
                 .collect(),
         )
@@ -158,6 +203,12 @@ impl From<&str> for Repository {
     }
 }
 
+impl From<String> for Repository {
+    fn from(repository: String) -> Self {
+        Self(repository)
+    }
+}
+
 impl ToToml for Repository {}
 
 pub struct RustVersion(semver::Version);
@@ -173,6 +224,12 @@ impl TryFrom<&str> for RustVersion {
 
     fn try_from(rust_version: &str) -> Result<Self, Self::Error> {
         Ok(Self(semver::Version::parse(rust_version)?))
+    }
+}
+
+impl From<semver::Version> for RustVersion {
+    fn from(rust_version: semver::Version) -> Self {
+        Self(rust_version)
     }
 }
 
