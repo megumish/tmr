@@ -137,7 +137,9 @@ pub fn cargo_toml(input: TokenStream) -> TokenStream {
     let cargo_toml_doc_ident = Ident::new("doc", proc_macro::Span::call_site().into());
     quote!(
         fn main() {
-            let mut #cargo_toml_file_ident = std::fs::File::create(&std::path::Path::new(file!()).parent().unwrap().to_path_buf().join("Cargo.toml")).unwrap();
+            let mut #cargo_toml_file_ident = std::fs::File::create(
+                std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(std::path::Path::new(file!()).parent().unwrap().to_path_buf().join("Cargo.toml"))
+            ).unwrap();
             let #cargo_toml_contents_ident = {
                 let mut #cargo_toml_contents_ident = String::new();
                 #(#cargo_toml_build_string_steps)*

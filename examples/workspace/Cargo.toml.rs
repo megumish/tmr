@@ -1,6 +1,6 @@
 //! ```cargo
 //! [dependencies]
-//! tmr-cargo = "0.6.0"
+//! tmr-cargo = "0.7.0"
 //! toml = "0.7.8"
 //! toml_edit = "0.19.15"
 //! semver = "1.0.18"
