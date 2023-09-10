@@ -251,4 +251,12 @@ impl TryFrom<&str> for Version {
     }
 }
 
+impl TryFrom<String> for Version {
+    type Error = semver::Error;
+
+    fn try_from(version: String) -> Result<Self, Self::Error> {
+        Ok(Self(semver::Version::parse(&version)?))
+    }
+}
+
 impl ToToml for Version {}
